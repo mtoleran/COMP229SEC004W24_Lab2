@@ -7,14 +7,17 @@ const read = (req, res) => {
 }
 
 const list = async (req, res) => { 
+    let products = await Product.find().select('name description price quantity category') 
     try {
-        let products = await Product.find().select('name description price quantity category') 
+        if(Object.keys(req.query).length !== 0){
+            products = await Product.find({ name: { $regex: req.query.name, $options: 'i' } }).select('name description price quantity category')
+        }
         res.json(products)
     } catch (err) {
         return res.status(400).json({
             error: errorHandler.getErrorMessage(err) 
         })
-    }  
+    }    
 }
 
 const productByID = async (req, res, next, id) => {
@@ -88,16 +91,4 @@ const removeAll = async (req, res) => {
     } 
 }
 
-const productsNameFilter = async (req, res) => { 
-    try {
-        let products = await Product.find({ name: { $regex: req.query.name, $options: 'i' } }).select('name description price quantity category') 
-        //let products = await Product.find({ name: /kw/ }).exec()
-        res.json(products)
-    } catch (err) {
-        return res.status(400).json({
-            error: errorHandler.getErrorMessage(err) 
-        })
-    }  
-}
-
-export default {read, list, productByID, create, update, removeByID, removeAll, productsNameFilter}
+export default {read, list, productByID, create, update, removeByID, removeAll}
